@@ -36,12 +36,12 @@ class Juego_damas{
         TipoJugador active_player = personPlayer;
 
         Juego_damas(){
-            icon.loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/FichaBlanca.png");
+            icon.loadFromFile("graphics/FichaBlanca.png");
 
             // --> Texturas de las fichas
-            textures[0].loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/tablero2.png");
-            textures[1].loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/FichaNegra.png");
-            textures[2].loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/FichaBlanca.png");
+            textures[0].loadFromFile("graphics/tablero2.png");
+            textures[1].loadFromFile("graphics/FichaNegra.png");
+            textures[2].loadFromFile("graphics/FichaBlanca.png");
             // textures[3].loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/FichaNegra.png"); // REINA
             // textures[4].loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/FichaBlanca.png"); // REINA
 
