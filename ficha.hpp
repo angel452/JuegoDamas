@@ -3,34 +3,27 @@
 
 #include <SFML/Graphics.hpp>
 
-//Type of declaration of Players
-enum OwningPlayer{
-    NOBODY,
-    HUMAN,
-    COMPUTER,
+// --> Guaramos los tipos de jugadores que tenemos
+enum TipoJugador{
+    winnerPlayer,
+    personPlayer,
+    IAPlayer,
 };
 
-//Sequence of play
-OwningPlayer otherPlayer(OwningPlayer current_player){
-    if (current_player == HUMAN)
-        return COMPUTER;
-    return HUMAN;
+TipoJugador otherPlayer(TipoJugador current_player){
+    if (current_player == personPlayer)
+        return IAPlayer;
+    return personPlayer;
 }
-
-enum Nivel{
-    normal,
-    king,
-};
 
 class Ficha{
 public:
-    OwningPlayer owner;
-    Nivel level = normal;
+    TipoJugador owner;
     float x,y;
     sf::Vector2i coordinates;
 
     //Positions
-    Ficha(int coord_x, int coord_y, float x_, float y_, OwningPlayer owner_){
+    Ficha(int coord_x, int coord_y, float x_, float y_, TipoJugador owner_){
         owner = owner_;
         x = x_;
         y = y_;

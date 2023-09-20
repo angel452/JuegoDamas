@@ -44,7 +44,7 @@ class Tablero_Class{
             
             float new_x, new_y;
 
-            OwningPlayer new_player;
+            TipoJugador new_player;
             shared_ptr<Ficha> new_ptr;
             for (int i = 0; i < 8; ++i){
                 for (int j = 0; j < 8; ++j){
@@ -54,9 +54,9 @@ class Tablero_Class{
                             new_x = border_size + i * field_size + 5;
                             new_y = border_size + (7-j) * field_size + 5;
                             if (j < 3)
-                                new_player = HUMAN;
+                                new_player = personPlayer;
                             else if (j > 4)
-                                new_player = COMPUTER;
+                                new_player = IAPlayer;
                             new_ptr = std::make_shared<Ficha>(i, j, new_x, new_y, new_player);
                             field[i][j] = new_ptr;
                             pawn_vector.push_back(weak_ptr<Ficha>(new_ptr));
@@ -88,7 +88,7 @@ class Tablero_Class{
                 for (int x = 0; x < 8; ++x){
                     auto printed_pawn = getPawn(sf::Vector2i(x, y));
                     if (printed_pawn){
-                        if (printed_pawn->owner == HUMAN)
+                        if (printed_pawn->owner == personPlayer)
                             std::cerr << 'O';
                         else
                             std::cerr << 'X';
@@ -101,8 +101,8 @@ class Tablero_Class{
             std::cerr << '\n';
         }
 
-        vector<weak_ptr<Ficha>>& getVector (OwningPlayer player){
-            if (player == HUMAN)
+        vector<weak_ptr<Ficha>>& getVector (TipoJugador player){
+            if (player == personPlayer)
                 return player_pawns[0];
             else
                 return player_pawns[1];
@@ -122,7 +122,7 @@ class Tablero_Class{
             if(fin.x >= 0 && fin.x <= 7 && fin.y >= 0 && fin.y <=7){
                 if(std::shared_ptr<Ficha> pawn = getPawn(inicio)){
                     int direction = 1;
-                    if (pawn->owner == COMPUTER)
+                    if (pawn->owner == IAPlayer)
                         direction = -1;
                     if (fin.y == inicio.y + direction){
                         if (fin.x == inicio.x + 1 || fin.x == inicio.x - 1){
@@ -150,12 +150,12 @@ class Tablero_Class{
             return result;
         }
 
-        vector<Movimiento>* getAvailibleMoves(OwningPlayer player, const shared_ptr<Ficha> pawn){
+        vector<Movimiento>* getAvailibleMoves(TipoJugador player, const shared_ptr<Ficha> pawn){
             vector<Movimiento>* move_vector = new vector<Movimiento>;
             sf::Vector2i inicio, fin;
             int direction = 1;
             if (pawn){
-                if (player == COMPUTER)
+                if (player == IAPlayer)
                     direction = -1;
                 inicio = pawn->coordinates;
                 for (int k: {1,2}){
@@ -175,7 +175,7 @@ class Tablero_Class{
             return move_vector;
         }
         
-        vector<Movimiento>* getAvailibleMoves(OwningPlayer player){
+        vector<Movimiento>* getAvailibleMoves(TipoJugador player){
             //Movements send to a vector to keep
             vector<Movimiento>* move_vector = new vector<Movimiento>;
             for (auto pawn_ptr: getVector(player)){
@@ -189,13 +189,13 @@ class Tablero_Class{
             return move_vector;
         }
 
-        bool& getBeatPossible(OwningPlayer player){
-            if (player == COMPUTER)
+        bool& getBeatPossible(TipoJugador player){
+            if (player == IAPlayer)
                 return beat_possible[1];
             return beat_possible[0];
         }
         
-        void resolveBeating(OwningPlayer player){
+        void resolveBeating(TipoJugador player){
             getBeatPossible(player) = false;
             std::vector<Movimiento>* move_vector = getAvailibleMoves(player);
             for (auto tested_move: *move_vector){
@@ -213,7 +213,7 @@ class Tablero_Class{
 
             if (auto pawn = getPawn(inicio)){
                 int direction = 1;
-                if (pawn->owner == COMPUTER)
+                if (pawn->owner == IAPlayer)
                     direction = -1;
                 if(tipo == BEAT){
                     sf::Vector2i beaten_pawn(inicio.x + (fin.x - inicio.x)/2, inicio.y + direction);
@@ -234,7 +234,7 @@ class Tablero_Class{
             return movePawn(move.inicio, move.fin, move.tipo);
         }
 
-        int getScore(OwningPlayer player){
+        int getScore(TipoJugador player){
             int score = 0;
             for (auto pawn_weak: getVector(player)){
                 if (auto pawn = pawn_weak.lock()){
@@ -242,7 +242,7 @@ class Tablero_Class{
                     int x = pawn->coordinates.x;
                     int y = pawn->coordinates.y;
                     score += 10;
-                    if (player == HUMAN){
+                    if (player == personPlayer){
                         if (y == 2 || y == 3)
                             score += 1;
                         else if (y == 4 || y == 5)
@@ -275,9 +275,9 @@ class Tablero_Class{
             return score;
         }
 
-        OwningPlayer checkWin(OwningPlayer player){
+        TipoJugador checkWin(TipoJugador player){
             resolveBeating(player);
-            OwningPlayer winner = NOBODY;
+            TipoJugador winner = winnerPlayer;
             vector<Movimiento>* availible_moves;
 
             availible_moves = getAvailibleMoves(player);

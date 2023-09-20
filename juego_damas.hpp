@@ -30,10 +30,10 @@ class Juego_damas{
         sf::Image icon;
         sf::RenderWindow window;
 
-        OwningPlayer players[2] = {HUMAN, COMPUTER};
+        TipoJugador players[2] = {personPlayer, IAPlayer};
         Tablero_Class game_board;
         //Who starts to play?
-        OwningPlayer active_player = HUMAN;
+        TipoJugador active_player = personPlayer;
 
         Juego_damas(){
             icon.loadFromFile("/home/angel/Documentos/UCSP/Semestre7/InteligenciaArtificial/Damas/Checkersv-master/graphics/FichaBlanca.png");
@@ -65,7 +65,7 @@ class Juego_damas{
             for(const auto pawn_ptr: game_board.pawn_vector){
                 if (auto drawn_pawn = pawn_ptr.lock()){
                     // --> player turn
-                    sprite_number = drawn_pawn->owner == HUMAN ? 1 : 2;
+                    sprite_number = drawn_pawn->owner == personPlayer ? 1 : 2;
                     // --> set coordinates of play and drawn
                     sprites[sprite_number].setPosition(drawn_pawn->x, drawn_pawn->y);
                     window.draw(sprites[sprite_number]);
@@ -81,30 +81,29 @@ class Juego_damas{
         }
 
         //Computer Play
-        int alphaBeta(Tablero_Class& current_board, Movimiento& best_move, int depth, OwningPlayer player, int alpha, int beta){
-            // std::cerr << "start poziom " << depth << '\n';
+        int alphaBeta(Tablero_Class& current_board, Movimiento& best_move, int depth, TipoJugador player, int alpha, int beta){
             int value;
-            // current_board.print();
-            if (depth == 0){ //or node is a terminal node
-                value = current_board.getScore(COMPUTER) - current_board.getScore(HUMAN);
-                // std::cerr << " return " << value << '\n';
+            // --> Caso Base
+            if (depth == 0){
+                value = current_board.getScore(IAPlayer) - current_board.getScore(personPlayer);
                 return value;
             }
 
             std::vector<Movimiento>* possible_moves = current_board.getAvailibleMoves(player);
             std::vector<Tablero_Class>* possible_boards = new std::vector<Tablero_Class>(possible_moves->size(), current_board);
-            // std::cerr << possible_moves->size() << "dostępnych ruchów\n";
+
             for (unsigned int i = 0; i < possible_moves->size(); ++i){
                 possible_boards->at(i).movePawn(possible_moves->at(i));
             }
-            if (player == COMPUTER){
+            
+            if (player == IAPlayer){
                 for (unsigned int i = 0; i < possible_boards->size(); ++i){
-                    value = alphaBeta(possible_boards->at(i), best_move, depth-1, HUMAN, alpha, beta);
+                    value = alphaBeta(possible_boards->at(i), best_move, depth-1, personPlayer, alpha, beta);
                     alpha = std::max(alpha, value);
                     if (alpha == value && depth == 6)
                         best_move = possible_moves->at(i);
                     if (alpha >= beta){
-                        // std::cerr << "alpha cut";
+                        // --> Poda alfa
                         break;
                     }
                 }
@@ -112,9 +111,9 @@ class Juego_damas{
             }
             else{
                 for (unsigned int i = 0; i < possible_boards->size(); ++i){
-                    beta = std::min(beta, alphaBeta(possible_boards->at(i), best_move, depth-1, COMPUTER, alpha, beta));
+                    beta = std::min(beta, alphaBeta(possible_boards->at(i), best_move, depth-1, IAPlayer, alpha, beta));
                     if (alpha >= beta){
-                        // std::cerr << "beta cut";
+                        // --> Poda beta
                         break;
                     }
                 }
@@ -140,12 +139,12 @@ class Juego_damas{
         }
         
         int computerMove(){
-            //How the computer is going to play
             Movimiento computer_move;
             sf::Clock clock;
             clock.restart();
-            //Implementation of alphabeta algoritm
-            alphaBeta(game_board, computer_move, 6, COMPUTER, INF_Negativo, INF_Positivo);
+
+            // --> Alpha beta con profundidad 6
+            alphaBeta(game_board, computer_move, 6, IAPlayer, INF_Negativo, INF_Positivo);
             cerr << clock.getElapsedTime().asMilliseconds();
             executeMove(computer_move.inicio, computer_move.fin, computer_move.tipo);
             return 0;
@@ -170,7 +169,7 @@ class Juego_damas{
             return false;
         }
         
-        int manualMove(OwningPlayer player){
+        int manualMove(TipoJugador player){
             sf::Vector2i mouse_position, start, finish;
             sf::Vector2i* updated_vector;
             std::shared_ptr<Ficha> active_pawn;
@@ -209,23 +208,23 @@ class Juego_damas{
             return 1;
         }
 
-        int getMove(OwningPlayer player){
+        int getMove(TipoJugador player){
             //Depend on the turn in the play
             game_board.resolveBeating(player);
-            if (player == COMPUTER)
+            if (player == IAPlayer)
                 return computerMove();
             else
-                return manualMove(HUMAN);
+                return manualMove(personPlayer);
         }
 
         void jugar(){
             //Start interactive play
-            Movimiento computer_move;
-            OwningPlayer winner = NOBODY;
-            while(winner == NOBODY){
+            Movimiento IAPlayer_move;
+            TipoJugador winner = winnerPlayer;
+            while(winner == winnerPlayer){
                 if(getMove(active_player))
                     break;
-                // std::cerr << alphaBeta(game_board, computer_move, 2, COMPUTER, minus_infty, plus_infty);
+                // std::cerr << alphaBeta(game_board, IAPlayer_move, 2, COMPUTER, minus_infty, plus_infty);
                 active_player = otherPlayer(active_player);
                 winner = game_board.checkWin(active_player);
             }
@@ -233,7 +232,7 @@ class Juego_damas{
             //Print the status finish game
             
 
-            if (winner == HUMAN)
+            if (winner == personPlayer)
             {
                 
                 std::cout << "\n\n";
@@ -250,7 +249,7 @@ class Juego_damas{
 
                 std::cout << "             You are the WINNER!!! \\O_0/\n";
             }
-            else if (winner == COMPUTER)
+            else if (winner == IAPlayer)
                 std::cout << "You are the LOOOSER :0 \n";
         }
 };
